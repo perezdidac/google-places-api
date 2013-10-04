@@ -127,44 +127,82 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 	private List<Place> getPlaces(String response) {
 		List<Place> places = new ArrayList<Place>();
 
-		// Parse the received JSON data
+		// Build the JSON object
+		JSONArray jsonPlaces;
 		try {
-			// Build the JSON object
-			JSONObject json = new JSONObject(response);
+			JSONObject jsonResponse = new JSONObject(response);
+			jsonPlaces = jsonResponse.getJSONArray("results");
+		} catch (JSONException e) {
+			// Not well formatted
+			return places;
+		}
 
-			// Get the array of places
-			JSONArray jsonPlaces = json.getJSONArray("results");
+		// Loop through the full list of places
+		for (int k = 0; k < jsonPlaces.length(); ++k) {
+			Place place = new Place();
 
-			// Loop through the full list of places
-			for (int k = 0; k < jsonPlaces.length(); ++k) {
-				Place place = new Place();
+			// Get the place object
+			JSONObject jsonPlace;
+			try {
+				jsonPlace = jsonPlaces.getJSONObject(k);
+			} catch (JSONException e) {
+				// No place
+				continue;
+			}
 
-				// Get the place object
-				JSONObject jsonPlace = jsonPlaces.getJSONObject(k);
-
-				// Get geometry
+			// Get geometry
+			try {
 				Geometry geometry = getGeometry(jsonPlace);
 				place.setGeometry(geometry);
+			} catch (JSONException e) {
+				// Error, but keep walking...
+			}
 
+			// Get types
+			try {
 				List<String> types = getTypes(jsonPlace);
 				place.setTypes(types);
+			} catch (JSONException e) {
+				// Error, but keep walking...
+			}
 
-				// Get values
+			// Get values
+			try {
 				String icon = jsonPlace.getString("icon");
 				place.setIcon(icon);
+			} catch (JSONException e) {
+				// Error, but keep walking...
+			}
+
+			try {
 				String id = jsonPlace.getString("id");
 				place.setId(id);
+			} catch (JSONException e) {
+				// Error, but keep walking...
+			}
+
+			try {
 				String name = jsonPlace.getString("name");
 				place.setName(name);
+			} catch (JSONException e) {
+				// Error, but keep walking...
+			}
+
+			try {
 				String reference = jsonPlace.getString("reference");
 				place.setReference(reference);
+			} catch (JSONException e) {
+				// Error, but keep walking...
+			}
+
+			try {
 				String vicinity = jsonPlace.getString("vicinity");
 				place.setVicinity(vicinity);
-
-				places.add(place);
+			} catch (JSONException e) {
+				// Error, but keep walking...
 			}
-		} catch (JSONException exception) {
 
+			places.add(place);
 		}
 
 		return places;
