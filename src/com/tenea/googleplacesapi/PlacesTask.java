@@ -120,6 +120,14 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 		// Set key
 		url += "&key=";
 		url += apiKey;
+		
+		// Optional parameters
+		String search = placesQueryOptions.getSearch();
+		if (search != null) {
+			// Set search
+			url += "&keyword=";
+			url += search;
+		}
 
 		return url;
 	}
@@ -225,21 +233,25 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 
 		// Parse geometry
 		JSONObject jsonGeometry = jsonPlace.getJSONObject("geometry");
-		JSONObject jsonGeometryLocation = jsonGeometry.getJSONObject("location");
-		JSONObject jsonGeometryViewport = jsonGeometry.getJSONObject("viewport");
-		JSONObject jsonGeometryViewportNortheast = jsonGeometryViewport.getJSONObject("northeast");
-		JSONObject jsonGeometryViewportSouthwest = jsonGeometryViewport.getJSONObject("southwest");
 
 		// Location
+		JSONObject jsonGeometryLocation = jsonGeometry.getJSONObject("location");
 		Coordinates location = getCoordinates(jsonGeometryLocation);
 		geometry.setLocation(location);
 
 		// Viewport
-		Coordinates northeast = getCoordinates(jsonGeometryViewportNortheast);
-		Coordinates southwest = getCoordinates(jsonGeometryViewportSouthwest);
-		geometry.setNortheast(northeast);
-		geometry.setSouthwest(southwest);
-
+		try {
+			JSONObject jsonGeometryViewport = jsonGeometry.getJSONObject("viewport");
+			JSONObject jsonGeometryViewportNortheast = jsonGeometryViewport.getJSONObject("northeast");
+			JSONObject jsonGeometryViewportSouthwest = jsonGeometryViewport.getJSONObject("southwest");
+			Coordinates northeast = getCoordinates(jsonGeometryViewportNortheast);
+			Coordinates southwest = getCoordinates(jsonGeometryViewportSouthwest);
+			geometry.setNortheast(northeast);
+			geometry.setSouthwest(southwest);
+		} catch (JSONException e) {
+			// No viewport
+		}
+		
 		return geometry;
 	}
 

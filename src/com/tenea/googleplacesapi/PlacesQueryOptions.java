@@ -32,6 +32,7 @@ public class PlacesQueryOptions {
 
 	private String apiKey;
 	private boolean sensor;
+	private String search;
 
 	public PlacesQueryOptions(String apiKey) {
 		this.setApiKey(apiKey);
@@ -51,6 +52,14 @@ public class PlacesQueryOptions {
 
 	public void setSensor(boolean sensor) {
 		this.sensor = sensor;
+	}
+
+	public String getSearch() {
+		return search;
+	}
+
+	public void setSearch(String search) {
+		this.search = search;
 	}
 
 }
