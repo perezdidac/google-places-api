@@ -33,6 +33,7 @@ public class PlacesQueryOptions {
 	private String apiKey;
 	private boolean sensor;
 	private String search;
+	private boolean downloadIcons;
 
 	public PlacesQueryOptions(String apiKey) {
 		this.setApiKey(apiKey);
@@ -60,6 +61,14 @@ public class PlacesQueryOptions {
 
 	public void setSearch(String search) {
 		this.search = search;
+	}
+
+	public boolean isDownloadIcons() {
+		return downloadIcons;
+	}
+
+	public void setDownloadIcons(boolean downloadIcons) {
+		this.downloadIcons = downloadIcons;
 	}
 
 }

@@ -29,6 +29,7 @@ or implied, of TENEA TECNOLOGÍAS.
 package com.tenea.googleplacesapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
 import com.tenea.googleplacesapi.places.Coordinates;
@@ -77,7 +80,7 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 
 			// No error during the get operation, so let's analyze
 			// the content of the response
-			List<Place> places = getPlaces(response);
+			List<Place> places = getPlaces(response, placeQuery);
 
 			// Set the places
 			result.setPlaces(places);
@@ -120,7 +123,7 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 		// Set key
 		url += "&key=";
 		url += apiKey;
-		
+
 		// Optional parameters
 		String search = placesQueryOptions.getSearch();
 		if (search != null) {
@@ -132,8 +135,9 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 		return url;
 	}
 
-	private List<Place> getPlaces(String response) {
+	private List<Place> getPlaces(String response, PlacesQuery placesQuery) {
 		List<Place> places = new ArrayList<Place>();
+		PlacesQueryOptions placesQueryOptions = placesQuery.getPlacesQueryOptions();
 
 		// Build the JSON object
 		JSONArray jsonPlaces;
@@ -177,7 +181,7 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 			// Get values
 			try {
 				String icon = jsonPlace.getString("icon");
-				place.setIcon(icon);
+				place.setIconUrl(icon);
 			} catch (JSONException e) {
 				// Error, but keep walking...
 			}
@@ -213,7 +217,66 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 			places.add(place);
 		}
 
+		// Check if we must download the icons
+		if (placesQueryOptions.isDownloadIcons()) {
+			downloadIcons(places);
+		}
+
 		return places;
+	}
+
+	private void downloadIcons(List<Place> places) {
+		// In this routine we must download the icons for each place type
+		List<String> iconUrls = new ArrayList<String>();
+
+		for (int k = 0; k < places.size(); ++k) {
+			// Get icon of the place
+			Place place = places.get(k);
+			String iconUrl = place.getIconUrl();
+
+			if (iconUrl != null) {
+				// The place has an icon, so let's add it into the list if it
+				// does not exist
+				boolean found = false;
+				for (int m = 0; m < iconUrls.size(); ++m) {
+					String testIconUrl = iconUrls.get(m);
+					if (testIconUrl.equals(iconUrl)) {
+						// Found, do not add
+						found = true;
+						break;
+					}
+				}
+				
+				if (!found) {
+					iconUrls.add(iconUrl);
+				}
+			}
+		}
+		
+		// At this point we have a list of non-repeated icon urls, so now we must
+		// start downloading the images and, since we are currently in an asynchronous task, we can do it here
+		for (int k = 0; k < iconUrls.size(); ++k) {
+			String iconUrl = iconUrls.get(k);
+			
+			try {
+				InputStream in = new java.net.URL(iconUrl).openStream();
+				Bitmap bitmap = BitmapFactory.decodeStream(in);
+				
+				// Assign that bitmap to all the places with this icon
+				for (int m = 0; m < places.size(); ++m) {
+					Place place = places.get(m);
+					
+					if (place.getIconUrl().equals(iconUrl)) {
+						// This is the icon
+						place.setIcon(bitmap);
+					}
+				}
+			} catch (Exception e) {
+				// Not possible due to an error
+			}
+		}
+
+		// OKAY, we have all the bitmaps
 	}
 
 	private List<String> getTypes(JSONObject jsonPlace) throws JSONException {
@@ -251,7 +314,7 @@ public class PlacesTask extends AsyncTask<PlacesQuery, Void, PlacesTaskResult> {
 		} catch (JSONException e) {
 			// No viewport
 		}
-		
+
 		return geometry;
 	}
 

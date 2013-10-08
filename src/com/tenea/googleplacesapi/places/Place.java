@@ -30,11 +30,14 @@ package com.tenea.googleplacesapi.places;
 
 import java.util.List;
 
+import android.graphics.Bitmap;
+
 public class Place {
 
 	private Geometry geometry;
 	private List<String> types;
-	private String icon;
+	private String iconUrl;
+	private Bitmap icon;
 	private String id;
 	private String name;
 	private String reference;
@@ -60,11 +63,19 @@ public class Place {
 		this.types = types;
 	}
 
-	public String getIcon() {
+	public String getIconUrl() {
+		return iconUrl;
+	}
+
+	public void setIconUrl(String iconUrl) {
+		this.iconUrl = iconUrl;
+	}
+
+	public Bitmap getIcon() {
 		return icon;
 	}
 
-	public void setIcon(String icon) {
+	public void setIcon(Bitmap icon) {
 		this.icon = icon;
 	}
 
