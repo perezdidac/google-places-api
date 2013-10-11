@@ -1,5 +1,5 @@
 Google Places API
-=====================
+=================
 
 Google Places API is a easy-to-use library written in Java. Google Places API
 parses the JSON received from the Google servers and builds a tree of objects which
